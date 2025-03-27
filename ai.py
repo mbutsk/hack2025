@@ -1,6 +1,8 @@
 from ollama import AsyncClient
 import re
 import logging
+
+# База системных промптов
 system_prompts = {
     "helper": """You are an assistant at FunCode, a programming school for children.
 
@@ -39,6 +41,7 @@ The field "answer" must contain only the answer. You must not write an explanati
 
 }
 
+# Класс для общения с ИИ
 class DSSession():
     def __init__(self, system: str):
         self.messages = [
@@ -47,8 +50,9 @@ class DSSession():
                 "content": system
             }
         ]
-        
+
     async def chat(self, message: str | None = None):
+        # Проверка на то, есть ли сообщение (например, для загадок оно не нужно)
         if message != None:
             self.messages.append({
                 "role": "user",
@@ -56,174 +60,177 @@ class DSSession():
             })
 
         logger = logging.getLogger("ollama")
-        logger.info("Starting think")
+        logger.info("Start thinking")
 
         response = await AsyncClient().chat(model='deepseek-r1:7b', messages=self.messages)
         answer: str = response["message"]["content"]
-        
 
+        # Отделение мыслей от всего остального
         match = re.search(r"<think>(.*?)</think>", answer, re.DOTALL)
-        
+
         think = match.group(1).strip()
-        answer = answer.replace(match.group(0), "").strip() 
-        
+        answer = answer.replace(match.group(0), "").strip()
+
         self.messages.append({
             "role": "assistant",
             "content": answer
         })
-        
-        
+
         return {
             "think":  think,
             "answer": answer
         }
-    
 
+# Немного переписанный класс из интернета для работы с крестиками-ноликами
 class _XO:
     def __init__(self):
         self.player = 1
         self.opponent = 2
 
     # Честно, не знаю что это, но оно зачем-то надо
-    def isMovesLeft(self, board): 
+    def isMovesLeft(self, board):
         for i in range(3):
             for j in range(3):
                 if (board[i][j] == 0):
-                    return True 
+                    return True
         return False
 
     # Проверка на выигрыш
-    def evaluate(self, b): 
-        # Checking for Rows for X or O victory.  
-        for row in range(3):     
-            if (b[row][0] == b[row][1] and b[row][1] == b[row][2]) :
+    def evaluate(self, b):
+        # Checking for Rows for X or O victory.
+        for row in range(3):
+            if (b[row][0] == b[row][1] and b[row][1] == b[row][2]):
 
                 if (b[row][0] == self.player):
                     return 10
                 elif (b[row][0] == self.opponent):
                     return -10
-    
-        # Checking for Columns for X or O victory.  
+
+        # Checking for Columns for X or O victory.
         for col in range(3):
-            if (b[0][col] == b[1][col] and b[1][col] == b[2][col]) :
-            
-                if (b[0][col] == self.player): 
+            if (b[0][col] == b[1][col] and b[1][col] == b[2][col]):
+
+                if (b[0][col] == self.player):
                     return 10
                 elif (b[0][col] == self.opponent):
                     return -10
-    
-        # Checking for Diagonals for X or O victory.  
-        if (b[0][0] == b[1][1] and b[1][1] == b[2][2]) :
-        
+
+        # Checking for Diagonals for X or O victory.
+        if (b[0][0] == b[1][1] and b[1][1] == b[2][2]):
+
             if (b[0][0] == self.player):
                 return 10
             elif (b[0][0] == self.opponent):
                 return -10
-    
+
         if (b[0][2] == b[1][1] and b[1][1] == b[2][0]):
-        
+
             if (b[0][2] == self.player):
                 return 10
             elif (b[0][2] == self.opponent):
                 return -10
-    
-        # Else if none of them have won then return 0  
+
+        # Else if none of them have won then return 0
         return 0
-    
+
     # Такая же ситуация, как и с isMovesLeft()
-    def minimax(self, board, depth, isMax): 
-        score = self.evaluate(board) 
-    
-        # If Maximizer has won the game return his/her  
-        # evaluated score  
-        if score == 10: 
-            return score 
-    
-        # If Minimizer has won the game return his/her  
-        # evaluated score  
+    def minimax(self, board, depth, isMax):
+        score = self.evaluate(board)
+
+        # If Maximizer has won the game return his/her
+        # evaluated score
+        if score == 10:
+            return score
+
+        # If Minimizer has won the game return his/her
+        # evaluated score
         if score == -10:
-            return score 
-    
-        # If there are no more moves and no winner then  
-        # it is a tie  
+            return score
+
+        # If there are no more moves and no winner then
+        # it is a tie
         if self.isMovesLeft(board) == False:
             return 0
-    
-        # If this maximizer's move  
-        if isMax:     
-            best = -1000 
-    
-            # Traverse all cells  
-            for i in range(3):         
+
+        # If this maximizer's move
+        if isMax:
+            best = -1000
+
+            # Traverse all cells
+            for i in range(3):
                 for j in range(3):
-                    # Check if cell is empty  
-                    if (board[i][j]==0):
-                        # Make the move  
-                        board[i][j] = self.player  
-    
-                        # Call minimax recursively and choose  
-                        # the maximum value  
-                        best = max(best, self.minimax(board, depth + 1, not isMax)) 
-    
-                        # Undo the move  
+                    # Check if cell is empty
+                    if (board[i][j] == 0):
+                        # Make the move
+                        board[i][j] = self.player
+
+                        # Call minimax recursively and choose
+                        # the maximum value
+                        best = max(best, self.minimax(
+                            board, depth + 1, not isMax))
+
+                        # Undo the move
                         board[i][j] = 0
-    
-        # If this minimizer's move  
+
+        # If this minimizer's move
         else:
-            best = 1000 
-    
-            # Traverse all cells  
-            for i in range(3):         
+            best = 1000
+
+            # Traverse all cells
+            for i in range(3):
                 for j in range(3):
-                    # Check if cell is empty  
+                    # Check if cell is empty
                     if board[i][j] == 0:
-                        # Make the move  
-                        board[i][j] = self.opponent  
-    
-                        # Call minimax recursively and choose  
-                        # the minimum value  
-                        best = min(best, self.minimax(board, depth + 1, not isMax)) 
-    
-                        # Undo the move  
+                        # Make the move
+                        board[i][j] = self.opponent
+
+                        # Call minimax recursively and choose
+                        # the minimum value
+                        best = min(best, self.minimax(
+                            board, depth + 1, not isMax))
+
+                        # Undo the move
                         board[i][j] = 0
 
         return best
-    
+
     # Поиск
-    def findBestMove(self, board): 
-        bestVal = -1000 
-        bestMove = (-1, -1)  
-    
-        # Traverse all cells, evaluate minimax function for  
-        # all empty cells. And return the cell with optimal  
-        # value.  
-        
-        for i in range(3):     
+    def findBestMove(self, board):
+        bestVal = -1000
+        bestMove = (-1, -1)
+
+        # Traverse all cells, evaluate minimax function for
+        # all empty cells. And return the cell with optimal
+        # value.
+
+        for i in range(3):
             for j in range(3):
-                # Check if cell is empty  
+                # Check if cell is empty
                 if (board[i][j] == 0):
-                
-                    # Make the move  
-                    board[i][j] = self.player 
-    
-                    # compute evaluation function for this  
-                    # move.  
-                    moveVal = self.minimax(board, 0, False)  
-    
-                    # Undo the move  
+
+                    # Make the move
+                    board[i][j] = self.player
+
+                    # compute evaluation function for this
+                    # move.
+                    moveVal = self.minimax(board, 0, False)
+
+                    # Undo the move
                     board[i][j] = 0
-    
-                    # If the value of the current move is  
-                    # more than the best value, then update  
-                    # best/  
-                    if moveVal > bestVal:                
-                        bestMove = (i, j) 
-                        bestVal = moveVal 
-    
-        return bestMove 
-    
+
+                    # If the value of the current move is
+                    # more than the best value, then update
+                    # best/
+                    if moveVal > bestVal:
+                        bestMove = (i, j)
+                        bestVal = moveVal
+
+        return bestMove
+
+
 xo = _XO()
-    
+
+# Поиск лучшего хода для крестик ноликов
 def TicTacToe(matrix: list[list[int]]):
     i, j = xo.findBestMove(matrix)
     matrix[i][j] = 1

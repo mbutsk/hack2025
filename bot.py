@@ -6,18 +6,16 @@ from dotenv import load_dotenv
 
 import os
 
-# Инициализация
+# Инициализация бота
 load_dotenv()
-TOKEN=os.getenv("TOKEN")
+TOKEN = os.getenv("TOKEN")
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
 dp = Dispatcher()
 router = Router()
 
-# штука для тестирования, чтобы никто не мешал тестировать и то, что должно быть реально в боте не перемешивалось с тестами
+# Разделение на роутер для тестирования, потому что иногда тестил прямо в чате
 white_list = [1223353442]
 test_router = Router()
 test_router.message.filter(lambda message: message.from_user.id in white_list)
-test_router.callback_query.filter(lambda callback: callback.from_user.id in white_list)
-
-router.message.filter(lambda message: message.from_user.id in white_list)
-router.callback_query.filter(lambda callback: callback.from_user.id in white_list)
+test_router.callback_query.filter(
+    lambda callback: callback.from_user.id in white_list)
