@@ -235,7 +235,7 @@ artist = {
             "AgACAgIAAxkBAAEzBfBn4s3YRW7s0Iby9w4DBfynkMOIGQAC1uwxGzfUGEupoHRliZfitAEAAwIAA3kAAzYE": ["leps", "jakson"]
         },
         "funcode": {
-            "AgACAgIAAxkBAAEy_itn4a-V8_Fc7Qy5XrYQNBn4e7bUnQACFvMxG-MBEUtBVVy0yfg58QEAAwIAA3gAAzYE": ["lashko", "belyai"] # moye lyubimoe
+            "AgACAgIAAxkBAAICuGfivCx74oPOYO6trStXGGPUdyRZAAIC5zEbNfUYS1pflje1XMU1AQADAgADeAADNgQ": ["lashko", "belyai"] # moye lyubimoe
         }
     }
 }

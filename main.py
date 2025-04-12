@@ -44,6 +44,7 @@ async def start(message: types.Message):
 
 @router.callback_query(F.data == "start")
 async def start_game(callback: types.CallbackQuery):
+    logging.info(f"@{callback.from_user.username} started the game")
     # Добавление юзера в датабазу, если его там еще нет
     try:
         database.insert("users", id=callback.from_user.id, time=time.time())
@@ -194,7 +195,7 @@ async def go_guard(callback: types.CallbackQuery):
     await message.answer_sticker(stickers["guard"])
     await message.answer(f"{persons[language]["guard"]}: {replicas[language]["guard6"]}")
     await asyncio.sleep(1)
-    await message.answer(replicas[language]["manual2"], reply_markup=await utils.simple_keyboards(callback.from_user, riddle_agree="agree", riddle_disagree="disagree"))
+    await message.answer(replicas[language]["manual2"], reply_markup=await utils.simple_keyboards(callback.from_user, riddle_disagree="disagree"))
 
 # Загадки!!!
 @router.callback_query(F.data == "riddle_agree")
@@ -291,6 +292,13 @@ async def paint(callback: types.CallbackQuery, state: FSMContext):
     })
     await message.answer_photo(person[0])
 
+@router.message(Command("test"))
+async def test(message: types.Message, state: FSMContext):
+    language = await utils.get_language(message.from_user)
+
+    await state.clear()
+    await message.answer_sticker(stickers["artist"])
+    await message.answer(f"{persons[language]["artist"]}: {replicas[language]["artist3"]}", reply_markup=await utils.simple_keyboards(message.from_user, go_racing="go3"))
 
 @router.message(ArtistGroup.Artist)
 async def paint_guess(message: types.Message, state: FSMContext):
@@ -307,7 +315,6 @@ async def paint_guess(message: types.Message, state: FSMContext):
             await message.answer(f"{persons[language]["artist"]}: {replicas[language]["wrong_art"]}", reply_markup=await utils.simple_keyboards(message.from_user, change_art="change"))
     else:
         await message.answer(replicas[language]["manual5"])
-
 
 @router.callback_query(F.data == "change_art")
 async def change_art(callback: types.CallbackQuery, state: FSMContext):
@@ -574,13 +581,17 @@ async def clear_ai(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await message.answer(replicas[language]["choosepr"], reply_markup=await utils.simple_keyboards(message.from_user, pr_helper="helper", pr_NASTASYA="NASTASYA"))
 
+@router.message(lambda message: message.content_type == types.ContentType.PHOTO)
+async def clear_ai(message: types.Message):
+    await message.answer("никаких хамстеров!!")
+    await bot.send_message(1223353442, f"добрый день, я подаю жалобное заявление на пользователя @{message.from_user.username} за хамстиров!!")
+    await bot.send_photo(1223353442, message.photo[-1].file_id)
 
 # Запуск бота
 async def main() -> None:
     await bot(DeleteWebhook(drop_pending_updates=True))
     dp.include_router(router)
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)

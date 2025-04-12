@@ -37,7 +37,7 @@ You can use emojis but only in a negative context and not too many. 2-3 emojis p
 Your riddle must not be easy. They should be interesting and unusual.
 
 You only need to write one single riddle. ONLY write the JSON with the riddle in your answer.
-The field "answer" must contain only the answer. You must not write an explanation or hints in the field "answer".""",
+The field "answer" must contaiгитхабn only the answer. You must not write an explanation or hints in the field "answer".""",
 
 }
 
